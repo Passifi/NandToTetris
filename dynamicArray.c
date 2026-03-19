@@ -10,9 +10,7 @@ int initializeArray(Array *array, size_t elementSize) {
     return 0;
   }
 }
-
 int resizeArray(Array *array) {
-
   array->size *= 2;
   void *result = realloc(array->value, (array->size) * array->elementSize);
   if (result == NULL) {

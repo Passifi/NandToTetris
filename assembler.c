@@ -13,7 +13,7 @@ void initializeScanner(char *data) {
 }
 
 char advance() { return scanner.data[scanner.position++]; }
-char peek() { return scanner.data[scanner.position + 1]; }
+char peek() { return scanner.data[scanner.position]; }
 int isAtEnd() { return scanner.position == 1024; }
 Array* scan() {
   while (!isAtEnd()) {
@@ -80,9 +80,7 @@ Array* scan() {
       addValue(&t,&tokens);
       break;
     }
-
-
-    case 'J': {
+   case 'J': {
       scanner.start = scanner.position;
       if (peek() == 'G') {
         advance();
@@ -106,7 +104,6 @@ Array* scan() {
       addValue(&t,&tokens);
           advance();
         }
-
       } else if (peek() == 'E') {
         advance();
         if (peek() == 'Q') {
@@ -131,14 +128,31 @@ Array* scan() {
        Token t = {"\n",Newline};
       addValue(&t,&tokens);
       break;
+      case '1': {
+        if(!isdigit(peek()))
+        {
+
+          Token t = {"1",Number,1};
+          addValue(&t,&tokens);
+          break;
+  
+        }
+
+      }
+ 
     default:
       if (isdigit(c)) {
-
+          unsigned int a = 0; 
           scanner.start = scanner.position;
-           
+          a += c - '0'; 
+          advance(); 
           while(isdigit(peek())) {
-              c = advance();
+            a *= 10;
+            a += c - '0';
+            advance();
           }
+          Token t = {"number",Number,a};
+          addValue(&t,&tokens);
       } else {
         // string
       }

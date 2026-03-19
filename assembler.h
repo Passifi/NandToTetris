@@ -35,6 +35,7 @@ enum TokenType {
 typedef struct Token {
   char *literal;
   enum TokenType type;
+  unsigned int value;
 } Token;
 
 typedef struct Scanner {

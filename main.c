@@ -8,13 +8,15 @@ void printArray(Array* arr) {
    Token t;
    for(int i = 0 ; i < arr->index; i++) {
    getValue(&t, i,  arr); 
-    printf("%s\n",t.literal); 
+    if(t.type == Number)  
+      printf("Number: %d\n",t.value);
+    else 
+      printf("%s\n",t.literal); 
   }
 
   }
 
 int scanFile(int argc, char **argv) {
-
   if (argc < 2) {
     printf("Please provide a proper file path\n");
     return -1;
@@ -30,6 +32,12 @@ int scanFile(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+  Array intArray;
+  Array doubleArray;
+  Array token;
+  initializeArray( &intArray,  sizeof(int));
+  initializeArray( &doubleArray,  sizeof(double));
+  initializeArray( &token,  sizeof(Token));
   scanFile(argc,argv);
   return 0;
 }
