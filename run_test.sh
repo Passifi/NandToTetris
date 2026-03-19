@@ -1,0 +1,1 @@
+./hackASM ./tst.asm
