@@ -26,52 +26,61 @@ Array* scan() {
     }
     case 'D': {
        Token t = {"D",DRegister};
-      addValue(&t,&tokens);
-      
+        addValue(&t,&tokens);
         break;
     }
-
     case 'M': {
-       Token t = {"D",DRegister};
+      Token t = {"M",Memory};
       addValue(&t,&tokens);
       break;
     }
 
     case ';': {
-       Token t = {"D",DRegister};
+      Token t = {";",Semicolon};
       addValue(&t,&tokens);
       break;
     }
 
     case '=': {
-       Token t = {"D",DRegister};
+      Token t = {"=",Assign};
       addValue(&t,&tokens);
       break;
     }
 
     case '+': {
-       Token t = {"D",DRegister};
+      Token t = {"+",Plus};
       addValue(&t,&tokens);
       break;
     }
 
     case '-': {
-       Token t = {"D",DRegister};
+      Token t = {"-",Minus};
       addValue(&t,&tokens);
       break;
     }
 
     case '@': {
-       Token t = {"D",DRegister};
+      Token t = {"@",SetAddress};
       addValue(&t,&tokens);
       break;
     }
 
     case '!': {
-       Token t = {"D",DRegister};
+      Token t = {"!",Not};
       addValue(&t,&tokens);
       break;
     }
+    case '&': {
+      Token t = {"&",And};
+      addValue(&t,&tokens);
+      break;
+    }
+    case '|': {
+      Token t = {"|",Or};
+      addValue(&t,&tokens);
+      break;
+    }
+
 
     case 'J': {
       scanner.start = scanner.position;
@@ -119,12 +128,17 @@ Array* scan() {
       break;
     }
     case '\n':
-       Token t = {"D",DRegister};
+       Token t = {"\n",Newline};
       addValue(&t,&tokens);
       break;
     default:
       if (isdigit(c)) {
-        // number
+
+          scanner.start = scanner.position;
+           
+          while(isdigit(peek())) {
+              c = advance();
+          }
       } else {
         // string
       }
