@@ -1,6 +1,7 @@
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
 #include <assert.h>
+#include "dynamicArray.h"
 #include <ctype.h>
 #include <math.h>
 #include <stdint.h>
@@ -45,7 +46,7 @@ typedef struct Scanner {
 int isAtEnd();
 char advance();
 char peek();
-void scan();
+Array* scan();
 void number();
 void string();
 void initializeScanner(char *data);

@@ -1,74 +1,75 @@
 #include "assembler.h"
 #include <ctype.h>
-
 static Scanner scanner;
 
-Token tokens[1024];
+Array tokens;
 static int currentToken = 0;
 void initializeScanner(char *data) {
   scanner.data = data;
   scanner.position = 0;
   scanner.start = 0;
+  initializeArray(&tokens, sizeof(Token));
+
 }
 
 char advance() { return scanner.data[scanner.position++]; }
 char peek() { return scanner.data[scanner.position + 1]; }
 int isAtEnd() { return scanner.position == 1024; }
-void scan() {
+Array* scan() {
   while (!isAtEnd()) {
     char c = advance();
     switch (c) {
     case 'A': {
-      tokens[currentToken].type = ARegister;
-      tokens[currentToken++].literal = "A";
-      currentToken++;
+      Token t = {"A",ARegister};
+      addValue(&t,&tokens);
       break;
     }
     case 'D': {
-      tokens[currentToken].type = DRegister;
-      tokens[currentToken++].literal = "D";
-      break;
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
+      
+        break;
     }
 
     case 'M': {
-      tokens[currentToken].type = Memory;
-      tokens[currentToken++].literal = "M";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case ';': {
-      tokens[currentToken].type = Semicolon;
-      tokens[currentToken++].literal = ";";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case '=': {
-      tokens[currentToken].type = Assign;
-      tokens[currentToken++].literal = "=";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case '+': {
-      tokens[currentToken].type = Plus;
-      tokens[currentToken++].literal = "+";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case '-': {
-      tokens[currentToken].type = Minus;
-      tokens[currentToken++].literal = "-";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case '@': {
-      tokens[currentToken].type = SetAddress;
-      tokens[currentToken++].literal = "@";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
     case '!': {
-      tokens[currentToken].type = Not;
-      tokens[currentToken++].literal = "!";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     }
 
@@ -77,38 +78,38 @@ void scan() {
       if (peek() == 'G') {
         advance();
         if (peek() == 'E') {
-          tokens[currentToken].type = JGE;
-          tokens[currentToken++].literal = "JGE";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         } else if (peek() == 'T') {
-          tokens[currentToken].type = JGT;
-          tokens[currentToken++].literal = "JGT";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         }
       } else if (peek() == 'L') {
         advance();
         if (peek() == 'E') {
-          tokens[currentToken].type = JLE;
-          tokens[currentToken++].literal = "JGE";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         } else if (peek() == 'T') {
-          tokens[currentToken].type = JLT;
-          tokens[currentToken++].literal = "JGT";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         }
 
       } else if (peek() == 'E') {
         advance();
         if (peek() == 'Q') {
-          tokens[currentToken].type = JEQ;
-          tokens[currentToken++].literal = "JEQ";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         }
       } else if (peek() == 'N') {
         advance();
         if (peek() == 'E') {
-          tokens[currentToken].type = JNE;
-          tokens[currentToken++].literal = "JNE";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
           advance();
         }
 
@@ -118,8 +119,8 @@ void scan() {
       break;
     }
     case '\n':
-      tokens[currentToken].type = Newline;
-      tokens[currentToken++].literal = "Newline";
+       Token t = {"D",DRegister};
+      addValue(&t,&tokens);
       break;
     default:
       if (isdigit(c)) {
@@ -129,4 +130,5 @@ void scan() {
       }
     }
   }
+  return &tokens;
 }
