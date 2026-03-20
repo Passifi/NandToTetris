@@ -4,13 +4,13 @@
 #include <stdlib.h>
 
 void printArray(Array* arr) {
-   
+  printf("%d\n",arr->index); 
    Token t;
    for(int i = 0 ; i < arr->index; i++) {
    getValue(&t, i,  arr); 
     if(t.type == Number)  
       printf("Number: %d\n",t.value);
-    else 
+    else if(t.type != Newline) 
       printf("%s\n",t.literal); 
   }
 
@@ -24,20 +24,14 @@ int scanFile(int argc, char **argv) {
   FILE *f;
   char dataBuffer[1024];
   f = fopen(argv[1], "r");
-  fread(dataBuffer, sizeof(char), 1024, f /* ataBuffer */);
-  initializeScanner(dataBuffer);
+  size_t size = fread(dataBuffer, sizeof(char), 1024, f /* ataBuffer */);
+  initializeScanner(dataBuffer,size);
   Array* arr = scan();
   printArray(arr);
   return 0;
 }
 
 int main(int argc, char **argv) {
-  Array intArray;
-  Array doubleArray;
-  Array token;
-  initializeArray( &intArray,  sizeof(int));
-  initializeArray( &doubleArray,  sizeof(double));
-  initializeArray( &token,  sizeof(Token));
   scanFile(argc,argv);
   return 0;
 }

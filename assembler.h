@@ -42,6 +42,7 @@ typedef struct Scanner {
   char *data;
   unsigned int position;
   unsigned int start;
+  size_t size;
 } Scanner;
 
 int isAtEnd();
@@ -50,7 +51,7 @@ char peek();
 Array* scan();
 void number();
 void string();
-void initializeScanner(char *data);
+void initializeScanner(char *data,size_t size);
 void freeScanner();
 void freeToken(Token t);
 #endif

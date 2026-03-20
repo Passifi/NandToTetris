@@ -4,17 +4,18 @@ static Scanner scanner;
 
 Array tokens;
 static int currentToken = 0;
-void initializeScanner(char *data) {
+void initializeScanner(char *data,size_t size) {
   scanner.data = data;
   scanner.position = 0;
   scanner.start = 0;
+  scanner.size = size;
   initializeArray(&tokens, sizeof(Token));
 
 }
 
 char advance() { return scanner.data[scanner.position++]; }
 char peek() { return scanner.data[scanner.position]; }
-int isAtEnd() { return scanner.position == 1024; }
+int isAtEnd() { return scanner.position == scanner.size; }
 Array* scan() {
   while (!isAtEnd()) {
     char c = advance();

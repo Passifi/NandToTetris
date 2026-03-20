@@ -2,6 +2,7 @@
 #define DYNAMIC_ARRAY_H
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 #define BASE_SIZE 1024
 typedef struct Array {
