@@ -2,7 +2,7 @@
 #include "dynamicArray.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "parser.h"
 void printArray(Array* arr) {
   printf("%d\n",arr->index); 
    Token t;
@@ -16,6 +16,14 @@ void printArray(Array* arr) {
 
   }
 
+void printInstructions(Array* arr) {
+  Instruction inst;
+  for(int i = 0 ; i < arr->index; i++) {
+   getValue(&inst, i,  arr); 
+  printf("%d\n",inst); 
+  }
+}
+
 int scanFile(int argc, char **argv) {
   if (argc < 2) {
     printf("Please provide a proper file path\n");
@@ -27,7 +35,9 @@ int scanFile(int argc, char **argv) {
   size_t size = fread(dataBuffer, sizeof(char), 1024, f /* ataBuffer */);
   initializeScanner(dataBuffer,size);
   Array* arr = scan();
-  printArray(arr);
+  initializeParser(*arr);
+  Array* instructions = parse();
+  printInstructions(instructions);  
   return 0;
 }
 

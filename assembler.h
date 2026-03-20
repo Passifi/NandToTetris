@@ -29,6 +29,7 @@ enum TokenType {
   JLT,
   JLE,
   JGT,
+  JMP,
   TT_END
 };
 

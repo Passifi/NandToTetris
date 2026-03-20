@@ -1,5 +1,5 @@
-hackASM: main.c assembler.c dynamicArray.c 
-	gcc -g main.c assembler.c dynamicArray.c  -o hackASM
+hackASM: main.c assembler.c dynamicArray.c parser.c 
+	gcc -g main.c assembler.c dynamicArray.c parser.c  -o hackASM
 
 test:
 	./run_test.sh
