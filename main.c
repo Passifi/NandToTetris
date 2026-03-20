@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "utility.h"
 void printArray(Array* arr) {
   printf("%d\n",arr->index); 
    Token t;
@@ -20,7 +21,7 @@ void printInstructions(Array* arr) {
   Instruction inst;
   for(int i = 0 ; i < arr->index; i++) {
    getValue(&inst, i,  arr); 
-  printf("%d\n",inst); 
+  printbinary(inst); 
   }
 }
 

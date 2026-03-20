@@ -25,7 +25,7 @@ Array* parse() {
   
   Token t = advanceToken();
   Instruction current = CMD_BASE;
-  
+  // detination operation source, semicolon, branch  
   //while not newline
   while(!isAtEndToken()) { 
   switch(t.type) {
