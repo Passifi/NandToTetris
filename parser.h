@@ -34,4 +34,12 @@ void initializeParser(Array tokens);
 Array* parse();
 int isAtEndToken();
 Token advanceToken();
+Token peek();
+int target(Instruction* inst);
+void setTarget(Instruction* inst,Token* t);
+int source(Instruction* inst);
+int jmp(Instruction* inst);
+int computation(Instruction* inst);
+int match(int* symbols, size_t size);
+Token getCurrent();
 #endif // !PARSER_H
