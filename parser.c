@@ -2,9 +2,10 @@
 #include "assembler.h"
 #include "dynamicArray.h"
 #define TARGET_NOT_FOUND -1
-
+#define SUCCESS 0 
+#define PARSING_ERROR -12
 static Parser parser;
-
+static unsigned int line;
 
 void initializeParser(Array tokens) {
   parser.tokens = tokens;
@@ -22,58 +23,21 @@ Token advanceToken() {
   return t;
 }
 
+Token peekToken() {
+   Token t;
+  getValue(&t,parser.index+1,&parser.tokens);
+  return t;
+
+}
+
 Array* parse() {
   
-  Token t = advanceToken();
-  Instruction current = CMD_BASE;
-  // detination operation source, semicolon, branch  
-  //while not newline
-  while(!isAtEndToken()) { 
-  switch(t.type) {
-    case DRegister:
-      current |= SET_D;
-      break;
-    case ARegister:
-      current |= SET_A;
-      break;
-    case Memory:
-      current |= SET_M;
-      break;
-    case JGE:
-      current |= CMP_GREATER_EQUAL;
-      break;
-    case JGT:
-      current |= CMP_GREATER;
-      break;
-    case JNE:
-      current |= CMP_NOT;
-      break;
-    case JLT:
-      current |= CMP_LESS;
-      break;
-    case JLE:
-      current |= CMP_LESS_EQUAL;
-      break;
-    case JMP:
-      current |= CMP_ALWAYS;
-      break;
-    case SetAddress:
-      
-      t = advanceToken();
-      // t must be a numeral here currenlty include a check
-      current = t.value;
-      break;
-    case Newline:
-        addValue(&current,&parser.instructions);
-        current = CMD_BASE;
-      break;
- default:
-      break;
-    
-    
+  Instruction inst;
+  while(target(&inst) != PARSING_ERROR) {
+    advanceToken();
+    addValue(&inst, &parser.instructions); 
   }
-    t = advanceToken();
-  }
+  
   return &parser.instructions;
 }
 int getTarget(Instruction* inst, Token* t) {
@@ -93,20 +57,53 @@ int getTarget(Instruction* inst, Token* t) {
   return 0;
 }
 int target(Instruction* inst) {
-Token t;
-  static int targetVals[] ={DRegister,ARegister,Memory,Not,Minus}; 
-  if(!match(targetVals,sizeof(targetVals))) {
-    jmp(inst);
+  Token t = getCurrent();
+  static int targetVals[] ={DRegister,ARegister,Memory}; 
+  int result = 0; 
+  int foundTarget = 0; 
+  while(match(targetVals,3)) {
+    if(peekToken().type == Semicolon) {
+      if(foundTarget) {
+        printf("Expected = and computation after destination\n");
+        return PARSING_ERROR;
+      } 
+      result = computation(inst);
+      break; 
+    }
+    foundTarget =1;
+       
+    switch(t.type) {
+      case DRegister:
+       *inst |= SET_D;
+      break; 
+      case ARegister:
+        *inst |= SET_A;
+      break; 
+      case Memory:
+        *inst |= SET_M;
+      break; 
+      default:
+        break;
+    }   
+
+    t = advanceToken();
+  }  
+  if(foundTarget) {
+    if(!(peekToken().type == Assign)) {
+      printf("Expected = after destination declaration\n");
+      return PARSING_ERROR; 
+    }
+    else {
+      t = advanceToken();
+    }
   }
-  int status = getTarget(inst,&t);    // operate 
-  if(status == TARGET_NOT_FOUND) {
-    
-  }
-  
+  result = computation(inst);
+  return result;
 }
-int source(Instruction* inst);
 int jmp(Instruction* inst);
-int computation(Instruction* inst);
+int computation(Instruction* inst) {
+  return SUCCESS;
+}
 
 int match(int* symbols, size_t size) {
   Token current = getCurrent();

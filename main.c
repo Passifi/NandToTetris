@@ -36,6 +36,7 @@ int scanFile(int argc, char **argv) {
   size_t size = fread(dataBuffer, sizeof(char), 1024, f /* ataBuffer */);
   initializeScanner(dataBuffer,size);
   Array* arr = scan();
+  printArray(arr);
   initializeParser(*arr);
   Array* instructions = parse();
   printInstructions(instructions);  
