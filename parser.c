@@ -1,7 +1,6 @@
 #include "parser.h"
 #include "assembler.h"
 #include "dynamicArray.h"
-#include <endian.h>
 #define TARGET_NOT_FOUND -1
 #define SUCCESS 0 
 #define PARSING_ERROR -12
@@ -23,16 +22,14 @@ Token advanceToken() {
 
 Token peekToken() {
    Token t;
-  getValue(&t,parser.index+1,&parser.tokens);
+  getValue(&t,parser.index,&parser.tokens);
   return t;
 
 }
 
 Array* parse() {
-  
   Instruction inst;
-  while(target(&inst) != PARSING_ERROR) {
-    advanceToken();
+  while(target(&inst) != PARSING_ERROR && !isAtEndToken()) {
     addValue(&inst, &parser.instructions); 
   }
   
@@ -55,44 +52,66 @@ int getTarget(Instruction *inst, Token *t) {
   return 0;
 }
 int target(Instruction* inst) {
-  Token t = getCurrent();
+  Token t = advanceToken();
+  if(t.type == Newline) {
+    t = advanceToken();
+  }
+  printf("%s\n",t.literal);
   static int targetVals[] ={DRegister,ARegister,Memory}; 
+  static int computationVals[] ={Not,Plus,Minus,Or,And}; 
   int result = 0; 
   int foundTarget = 0; 
+  if(match(computationVals,5)) {
+    return computation(inst);
+  }
   while(match(targetVals,3)) {
+    printf("Target Value found\n");
     if(peekToken().type == Semicolon) {
-      if(foundTarget) {
-        printf("Expected = and computation after destination\n");
+      if(foundTarget>1) {
+        printf("1.Expected = after desitination\n Error in Line: %d\n",t.line);
+         
         return PARSING_ERROR;
       } 
+      advanceToken();
       result = computation(inst);
       break; 
     }
-    foundTarget =1;
        
     switch(t.type) {
       case DRegister:
-       *inst |= SET_D;
+        if(peekMatch(computationVals,5)) {
+          return computation(inst);
+        }
+        else { 
+          *inst |= SET_D;
+        }
       break; 
       case ARegister:
+        if(peekMatch(computationVals,5)) {
+          return computation(inst);
+        }
+     
         *inst |= SET_A;
       break; 
-      case Memory:
+      case Memory: 
+        if(peekMatch(computationVals,5)) {
+          return computation(inst);
+        }
+     
         *inst |= SET_M;
       break; 
       default:
         break;
     }   
-
+    
+    foundTarget++;
     t = advanceToken();
   }  
   if(foundTarget) {
-    if(!(peekToken().type == Assign)) {
-      printf("Expected = after destination declaration\n");
+    if(t.type != Assign) {
+        printf("2.Expected = and computation after destination\n Error in Line: %d\n",t.line);
+       
       return PARSING_ERROR; 
-    }
-    else {
-      t = advanceToken();
     }
   }
   result = computation(inst);
@@ -100,11 +119,45 @@ int target(Instruction* inst) {
 }
 int jmp(Instruction* inst);
 int computation(Instruction* inst) {
+  printf("Jumped into computation\n");
+  
+  Token t = advanceToken();
+  
+  switch(t.type) {
+    
+    case DRegister:
+      *inst &= (~ZERO_D); 
+      break;
+    case ARegister:
+      *inst &= (~ZERO_A);
+      break;
+    case Memory:
+      *inst = (*inst & ~ZERO_A) | USE_MEMORY;
+      break;
+    case Minus:
+      *inst |= ADD_VALUES;
+      break;
+    case Plus:
+      *inst |= ADD_VALUES;
+      break;
+    case Not:
+      *inst |= NEGATE_OUT;
+      break;
+    case Or:
+      *inst |= NEGATE_A;
+      *inst |= NEGATE_D;
+      *inst |= NEGATE_OUT;
+      break;
+    case And:
+      // check for next value must be either M or A
+      break;
+    default:
+      break;
+  }
+
   return SUCCESS;
 }
 
-  return result;
-}
 
 int jmp(Instruction *inst);
 int operator(Instruction *inst) {
@@ -128,30 +181,6 @@ int operator(Instruction *inst) {
   }
   return result;
 }
-int computation(Instruction *inst) {
-  Token t;
-  int result = 0;
-  switch (t.type) {
-  case Not:
-    // check for register and continue
-    break;
-  case Minus:
-
-  // check for register and continue
-  //
-  case DRegister:
-    // check for operator
-    break;
-  case Memory:
-    // check for operator
-  case ARegister:
-    // check for operator
-  default:
-    result = -1;
-  }
-  return result;
-}
-
 int match(int *symbols, size_t size) {
   Token current = getCurrent();
   for (size_t i = 0; i < size; i++) {
@@ -162,9 +191,20 @@ int match(int *symbols, size_t size) {
 
   return 0;
 }
+int peekMatch(int *symbols, size_t size) {
+  Token current = peekToken();
+  for (size_t i = 0; i < size; i++) {
+    if (current.type == symbols[i]) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 
 Token getCurrent() {
   Token value;
-  getValue(&value, parser.index, &parser.tokens);
+  getValue(&value, parser.index-1, &parser.tokens);
   return value;
 }

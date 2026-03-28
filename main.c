@@ -5,14 +5,13 @@
 #include "parser.h"
 #include "utility.h"
 void printArray(Array* arr) {
-  printf("%d\n",arr->index); 
    Token t;
    for(int i = 0 ; i < arr->index; i++) {
    getValue(&t, i,  arr); 
     if(t.type == Number)  
-      printf("Number: %d\n",t.value);
+      printf("Number: %d Line: %d\n",t.value,t.line);
     else if(t.type != Newline) 
-      printf("%s\n",t.literal); 
+      printf("%s\n Line: %d\n",t.literal,t.line); 
   }
 
   }
@@ -36,7 +35,6 @@ int scanFile(int argc, char **argv) {
   size_t size = fread(dataBuffer, sizeof(char), 1024, f /* ataBuffer */);
   initializeScanner(dataBuffer,size);
   Array* arr = scan();
-  printArray(arr);
   initializeParser(*arr);
   Array* instructions = parse();
   printInstructions(instructions);  

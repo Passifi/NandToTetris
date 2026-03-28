@@ -9,6 +9,7 @@ void initializeScanner(char *data,size_t size) {
   scanner.position = 0;
   scanner.start = 0;
   scanner.size = size;
+  scanner.lineNumber = 0; 
   initializeArray(&tokens, sizeof(Token));
 
 }
@@ -21,63 +22,63 @@ Array* scan() {
     char c = advance();
     switch (c) {
     case 'A': {
-      Token t = {"A",ARegister};
+      Token t = {"A",ARegister,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
     case 'D': {
-       Token t = {"D",DRegister};
+       Token t = {"D",DRegister,scanner.lineNumber};
         addValue(&t,&tokens);
         break;
     }
     case 'M': {
-      Token t = {"M",Memory};
+      Token t = {"M",Memory,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case ';': {
-      Token t = {";",Semicolon};
+      Token t = {";",Semicolon,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case '=': {
-      Token t = {"=",Assign};
+      Token t = {"=",Assign,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case '+': {
-      Token t = {"+",Plus};
+      Token t = {"+",Plus,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case '-': {
-      Token t = {"-",Minus};
+      Token t = {"-",Minus,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case '@': {
-      Token t = {"@",SetAddress};
+      Token t = {"@",SetAddress,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
 
     case '!': {
-      Token t = {"!",Not};
+      Token t = {"!",Not,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
     case '&': {
-      Token t = {"&",And};
+      Token t = {"&",And,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
     case '|': {
-      Token t = {"|",Or};
+      Token t = {"|",Or,scanner.lineNumber};
       addValue(&t,&tokens);
       break;
     }
@@ -86,36 +87,36 @@ Array* scan() {
       if (peek() == 'G') {
         advance();
         if (peek() == 'E') {
-       Token t = {"D",DRegister};
+       Token t = {"JGE",JGE,scanner.lineNumber};
       addValue(&t,&tokens);
           advance();
         } else if (peek() == 'T') {
-       Token t = {"D",DRegister};
+       Token t = {"JGT",JGT,scanner.lineNumber};
       addValue(&t,&tokens);
           advance();
         }
       } else if (peek() == 'L') {
         advance();
         if (peek() == 'E') {
-       Token t = {"D",DRegister};
+       Token t = {"JLE",JLE,scanner.lineNumber};
       addValue(&t,&tokens);
           advance();
         } else if (peek() == 'T') {
-       Token t = {"D",DRegister};
+       Token t = {"JLT",JLT,scanner.lineNumber};
       addValue(&t,&tokens);
           advance();
         }
       } else if (peek() == 'E') {
         advance();
         if (peek() == 'Q') {
-       Token t = {"D",DRegister};
+       Token t = {"JEQ",JEQ,scanner.lineNumber};
       addValue(&t,&tokens);
           advance();
         }
       } else if (peek() == 'N') {
         advance();
         if (peek() == 'E') {
-       Token t = {"D",DRegister};
+       Token t = {"JNE",JNE};
       addValue(&t,&tokens);
           advance();
         }
@@ -126,19 +127,26 @@ Array* scan() {
       break;
     }
     case '\n':
-       Token t = {"\n",Newline};
+       Token t = {"\n",Newline,scanner.lineNumber};
+      scanner.lineNumber++;
       addValue(&t,&tokens);
       break;
       case '1': {
         if(!isdigit(peek()))
         {
-
-          Token t = {"1",Number,1};
+          Token t = {"1",One,scanner.lineNumber,1};
           addValue(&t,&tokens);
           break;
-  
         }
+      }
 
+      case '0': {
+        if(!isdigit(peek())) {
+          Token t = {"0",Zero,scanner.lineNumber,1};
+          addValue(&t,&tokens);
+          break;
+
+        }
       }
  
     default:
@@ -152,7 +160,7 @@ Array* scan() {
             a += c - '0';
             advance();
           }
-          Token t = {"number",Number,a};
+          Token t = {"number",Number,scanner.lineNumber,a};
           addValue(&t,&tokens);
       } else {
         // string

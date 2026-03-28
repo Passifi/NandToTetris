@@ -23,6 +23,8 @@ enum TokenType {
   Not,
   Newline,
   Semicolon,
+  One,
+  Zero,
   JEQ,
   JGE,
   JNE,
@@ -36,6 +38,7 @@ enum TokenType {
 typedef struct Token {
   char *literal;
   enum TokenType type;
+  unsigned int line;
   unsigned int value;
 } Token;
 
@@ -44,6 +47,7 @@ typedef struct Scanner {
   unsigned int position;
   unsigned int start;
   size_t size;
+  unsigned int lineNumber; 
 } Scanner;
 
 int isAtEnd();
