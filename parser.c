@@ -6,13 +6,13 @@
 #define PARSING_ERROR -12
 static Parser parser;
 static unsigned int line;
-
+static int computationVals[] ={Not,Plus,Minus,Or,And}; 
 void initializeParser(Array tokens) {
   parser.tokens = tokens;
   initializeArray(&parser.instructions, sizeof(Instruction));
 }
 
-int isAtEndToken() { return parser.tokens.index == parser.index; }
+int isAtEndToken() { return parser.tokens.index <= parser.index; }
 
 Token advanceToken() {
   Token t;
@@ -28,28 +28,15 @@ Token peekToken() {
 }
 
 Array* parse() {
-  Instruction inst;
+
+  Instruction inst = CMD_BASE;
   while(target(&inst) != PARSING_ERROR && !isAtEndToken()) {
+    
     addValue(&inst, &parser.instructions); 
+    inst = CMD_BASE; 
   }
   
   return &parser.instructions;
-}
-int getTarget(Instruction *inst, Token *t) {
-  switch (t->type) {
-  case DRegister:
-    *inst |= SET_D;
-    break;
-  case ARegister:
-    *inst |= SET_A;
-    break;
-  case Memory:
-    *inst |= SET_M;
-    break;
-  default:
-    return TARGET_NOT_FOUND;
-  }
-  return 0;
 }
 int target(Instruction* inst) {
   Token t = advanceToken();
@@ -58,7 +45,6 @@ int target(Instruction* inst) {
   }
   printf("%s\n",t.literal);
   static int targetVals[] ={DRegister,ARegister,Memory}; 
-  static int computationVals[] ={Not,Plus,Minus,Or,And}; 
   int result = 0; 
   int foundTarget = 0; 
   if(match(computationVals,5)) {
@@ -68,7 +54,7 @@ int target(Instruction* inst) {
     printf("Target Value found\n");
     if(peekToken().type == Semicolon) {
       if(foundTarget>1) {
-        printf("1.Expected = after desitination\n Error in Line: %d\n",t.line);
+        printf("1.Expected = after destination\n Error in Line: %d\n",t.line);
          
         return PARSING_ERROR;
       } 
@@ -110,7 +96,6 @@ int target(Instruction* inst) {
   if(foundTarget) {
     if(t.type != Assign) {
         printf("2.Expected = and computation after destination\n Error in Line: %d\n",t.line);
-       
       return PARSING_ERROR; 
     }
   }
@@ -118,38 +103,101 @@ int target(Instruction* inst) {
   return result;
 }
 int jmp(Instruction* inst);
+int registerOperand(Instruction *inst) {
+  Token t = advanceToken();
+  switch(t.type) {      
+    case One: {
+      Instruction buffer = 0b0000111111000000;
+      Instruction InvertedRegister = ~(*inst & 0b111100000000)&*inst; 
+      buffer ^= InvertedRegister; 
+      *inst = buffer;
+      break; 
+      }
+    case DRegister:
+      *inst |= NEGATE_A | NEGATE_OUT;
+      break;
+    case Memory:
+      *inst |= USE_MEMORY;
+    case ARegister: 
+      *inst |= NEGATE_D | NEGATE_OUT;
+      break;
+    default:
+      return PARSING_ERROR;
+  }
+  return SUCCESS;
+}   
+int operator(Instruction *inst) {
+  Token t = advanceToken();
+  switch(t.type) {
+    case Minus: {
+      *inst |= ADD_VALUES | NEGATE_OUT ;
+      Token nextToken = peekToken();
+      return registerOperand(inst);
+      break;
+    }
+    case Plus: {
+      *inst |= ADD_VALUES;
+      Token nextToken = peekToken(); 
+      if(nextToken.type == Memory) {
+        *inst |= USE_MEMORY;
+      }
+      else if(nextToken.type == One) {
+         Instruction buffer = 0b0000111111000000;
+        buffer ^= *inst; 
+        *inst = buffer;
+      }
+        
+        advanceToken(); 
+      }
+    break;
+    case Or:
+      *inst |= NEGATE_A | NEGATE_D | NEGATE_OUT;
+       if(peekToken().type == Memory) {
+        *inst |= USE_MEMORY;
+      }  
+
+        advanceToken(); 
+    break;
+    case And:
+      *inst &= 0b1111000000111111;
+      if(peekToken().type == Memory) {
+        *inst |= USE_MEMORY;
+      }
+
+        advanceToken(); 
+    break;
+    default:  
+      printf("Expected operator after Register/Memory declaration in computation [+-|&]\n");
+      printf("Token Value: %s\n",t.literal); 
+      return PARSING_ERROR;
+  }
+  return SUCCESS;
+}
 int computation(Instruction* inst) {
   printf("Jumped into computation\n");
   
   Token t = advanceToken();
-  
+   
+  printf("Token Value: %s\n",t.literal); 
   switch(t.type) {
     
     case DRegister:
       *inst &= (~ZERO_D); 
+      if(peekToken().type == Semicolon) {
+          return jmp(inst);
+      }
+      return operator(inst);
       break;
     case ARegister:
       *inst &= (~ZERO_A);
+      return operator(inst);
       break;
     case Memory:
       *inst = (*inst & ~ZERO_A) | USE_MEMORY;
-      break;
-    case Minus:
-      *inst |= ADD_VALUES;
-      break;
-    case Plus:
-      *inst |= ADD_VALUES;
+      return operator(inst);
       break;
     case Not:
       *inst |= NEGATE_OUT;
-      break;
-    case Or:
-      *inst |= NEGATE_A;
-      *inst |= NEGATE_D;
-      *inst |= NEGATE_OUT;
-      break;
-    case And:
-      // check for next value must be either M or A
       break;
     default:
       break;
@@ -159,28 +207,10 @@ int computation(Instruction* inst) {
 }
 
 
-int jmp(Instruction *inst);
-int operator(Instruction *inst) {
-  Token t;
-  int result = 0;
-  switch (t.type) {
-  case Not:
-    // look for source if no source found ERROR
-    break;
-  case And:
-
-    break;
-  case Or:
-    break;
-  case Plus:
-    break;
-  case Minus:
-    break;
-  default:
-    return -1;
-  }
-  return result;
+int jmp(Instruction *inst) {
+  return 0;
 }
+
 int match(int *symbols, size_t size) {
   Token current = getCurrent();
   for (size_t i = 0; i < size; i++) {

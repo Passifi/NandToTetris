@@ -1,6 +1,6 @@
-A=D
-D=M
+M=D+A
+D=D+M
 MAD=D+1
-A=D
-M=1
+A=D-A
+M=A&D
 
