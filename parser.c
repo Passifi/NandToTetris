@@ -20,6 +20,12 @@ Token advanceToken() {
   return t;
 }
 
+Token getLast() {
+  Token t; 
+  getValue(&t,parser.index-2,&parser.tokens);
+  return t;
+}
+
 Token peekToken() {
    Token t;
   getValue(&t,parser.index,&parser.tokens);
@@ -107,10 +113,7 @@ int registerOperand(Instruction *inst) {
   Token t = advanceToken();
   switch(t.type) {      
     case One: {
-      Instruction buffer = 0b0000111111000000;
-      Instruction InvertedRegister = ~(*inst & 0b111100000000)&*inst; 
-      buffer ^= InvertedRegister; 
-      *inst = buffer;
+
       break; 
       }
     case DRegister:
@@ -131,6 +134,11 @@ int operator(Instruction *inst) {
   switch(t.type) {
     case Minus: {
       *inst |= ADD_VALUES | NEGATE_OUT ;
+      if((*inst & ZERO_D) != 0) {
+        *inst |= NEGATE_A; 
+        
+      } 
+      
       Token nextToken = peekToken();
       return registerOperand(inst);
       break;
@@ -175,25 +183,23 @@ int operator(Instruction *inst) {
 }
 int computation(Instruction* inst) {
   printf("Jumped into computation\n");
-  
   Token t = advanceToken();
-   
   printf("Token Value: %s\n",t.literal); 
   switch(t.type) {
     
     case DRegister:
-      *inst &= (~ZERO_D); 
+      *inst |= (ZERO_A) | NEGATE_A; 
       if(peekToken().type == Semicolon) {
           return jmp(inst);
       }
       return operator(inst);
       break;
     case ARegister:
-      *inst &= (~ZERO_A);
+      *inst |= (ZERO_D) | NEGATE_D;
       return operator(inst);
       break;
     case Memory:
-      *inst = (*inst & ~ZERO_A) | USE_MEMORY;
+      *inst |= (ZERO_D) | NEGATE_D | USE_MEMORY;
       return operator(inst);
       break;
     case Not:
